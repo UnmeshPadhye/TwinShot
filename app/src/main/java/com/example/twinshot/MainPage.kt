@@ -1,7 +1,9 @@
 package com.example.twinshot
 
+import android.widget.VideoView
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -10,7 +12,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.viewinterop.AndroidView
 import com.microsoft.device.dualscreen.twopanelayout.TwoPaneLayout
 import com.microsoft.device.dualscreen.twopanelayout.TwoPaneMode
 import com.microsoft.device.dualscreen.windowstate.WindowState
@@ -36,18 +40,18 @@ fun MainPage(windowState: WindowState) {
         paneMode = paneMode,
         pane1 = {
             if (isFullScreen) {
-                Greetings(name = "hello")
+                VideoApp()
             } else {
                 when {
-                    windowState.isDualScreen() -> Greetings(name = "hello")
+                    windowState.isDualScreen() ->
+                        VideoApp()
                     windowState.isSingleLandscape() -> RowView(focusManager, isFullScreen, updateFullScreen, currentPosition, updatePosition)
                     else -> ColumnView(focusManager, isFullScreen, updateFullScreen, currentPosition, updatePosition)
                 }
             }
         },
         pane2 = {
-            Greetings(name = "pane2")
-            Greeting(name = "pane2")
+            VideoApp()
         }
     )
 }
@@ -61,7 +65,7 @@ fun ColumnView(
     updatePosition: (Long) -> Unit
 ) {
     Column {
-        Greetings(name = "hello")
+        Greetings(name = "Column")
     }
 }
 
@@ -74,8 +78,29 @@ fun RowView(
     updatePosition: (Long) -> Unit
 ) {
     Row {
-        Greetings(name = "hello")
+        Greetings(name = "Row")
     }
+}
+
+@Composable
+fun VideoFeed(videoUri: String) {
+    val context = LocalContext.current
+
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+            VideoView(context).apply {
+                setVideoPath(videoUri)
+                start()
+            }
+        }
+    )
+}
+
+@Composable
+fun VideoApp() {
+    val videoUri = "android.resource://com.example.twinshot/raw/zeta_ad"
+    VideoFeed(videoUri)
 }
 
 @Composable
